@@ -224,6 +224,7 @@ public class FourierController
 	 */
 	private void shiftDFT(Mat image)
 	{
+		image = image.submat(new Rect(0, 0, image.cols() & -2, image.rows() & -2));
 		int cx = image.cols() / 2;
 		int cy = image.rows() / 2;
 		
