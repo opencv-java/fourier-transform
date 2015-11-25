@@ -16,10 +16,11 @@ import javafx.fxml.FXMLLoader;
  * transformation and antitranformation.
  * 
  * @author <a href="mailto:luigi.derussis@polito.it">Luigi De Russis</a>
- * @since 2013-12-11
+ * @version 1.1 (2015-11-03)
+ * @since 1.0 (2013-12-11)
  * 
  */
-public class Lab4 extends Application
+public class Fourier extends Application
 {
 	// the main stage
 	private Stage primaryStage;
@@ -39,7 +40,7 @@ public class Lab4 extends Application
 			// create the stage with the given title and the previously created
 			// scene
 			this.primaryStage = primaryStage;
-			this.primaryStage.setTitle("Lab 4");
+			this.primaryStage.setTitle("Fourier");
 			this.primaryStage.setScene(scene);
 			this.primaryStage.show();
 			

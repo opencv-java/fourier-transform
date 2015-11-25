@@ -11,9 +11,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.highgui.Highgui;
-import org.opencv.imgproc.Imgproc;
-
+import org.opencv.imgcodecs.Imgcodecs;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -28,7 +26,8 @@ import javafx.stage.Stage;
  * antitransformation.
  * 
  * @author <a href="mailto:luigi.derussis@polito.it">Luigi De Russis</a>
- * @since 2013-12-11
+ * @version 1.1 (2015-11-03)
+ * @since 1.0 (2013-12-11)
  * 
  */
 public class FourierController
@@ -79,7 +78,7 @@ public class FourierController
 		if (file != null)
 		{
 			// read the image in gray scale
-			this.image = Highgui.imread(file.getAbsolutePath(), Highgui.CV_LOAD_IMAGE_GRAYSCALE);
+			this.image = Imgcodecs.imread(file.getAbsolutePath(), Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 			// show the image
 			this.originalImage.setImage(this.mat2Image(this.image));
 			// set a fixed width
@@ -175,8 +174,8 @@ public class FourierController
 		// get the optimal cols size for dft
 		int addPixelCols = Core.getOptimalDFTSize(image.cols());
 		// apply the optimal cols and rows size to the image
-		Imgproc.copyMakeBorder(image, padded, 0, addPixelRows - image.rows(), 0, addPixelCols - image.cols(),
-				Imgproc.BORDER_CONSTANT, Scalar.all(0));
+		Core.copyMakeBorder(image, padded, 0, addPixelRows - image.rows(), 0, addPixelCols - image.cols(),
+				Core.BORDER_CONSTANT, Scalar.all(0));
 		
 		return padded;
 	}
@@ -200,16 +199,18 @@ public class FourierController
 		Core.magnitude(newPlanes.get(0), newPlanes.get(1), mag);
 		
 		// move to a logarithmic scale
-		Core.add(mag, Scalar.all(1), mag);
+		Core.add(Mat.ones(mag.size(), CvType.CV_32F), mag, mag);
 		Core.log(mag, mag);
 		// optionally reorder the 4 quadrants of the magnitude image
 		this.shiftDFT(mag);
 		// normalize the magnitude image for the visualization since both JavaFX
 		// and OpenCV need images with value between 0 and 255
-		Core.normalize(mag, mag, 0, 255, Core.NORM_MINMAX);
+		// convert back to CV_8UC1
+		mag.convertTo(mag, CvType.CV_8UC1);
+		Core.normalize(mag, mag, 0, 255, Core.NORM_MINMAX, CvType.CV_8UC1);
 		
 		// you can also write on disk the resulting image...
-		// Highgui.imwrite("../magnitude.png", mag);
+		// Imgcodecs.imwrite("../magnitude.png", mag);
 		
 		return mag;
 	}
@@ -223,7 +224,6 @@ public class FourierController
 	 */
 	private void shiftDFT(Mat image)
 	{
-		image = image.submat(new Rect(0, 0, image.cols() & -2, image.rows() & -2));
 		int cx = image.cols() / 2;
 		int cy = image.rows() / 2;
 		
@@ -265,7 +265,7 @@ public class FourierController
 		// create a temporary buffer
 		MatOfByte buffer = new MatOfByte();
 		// encode the frame in the buffer, according to the PNG format
-		Highgui.imencode(".png", frame, buffer);
+		Imgcodecs.imencode(".png", frame, buffer);
 		// build and return an Image created from the image encoded in the
 		// buffer
 		return new Image(new ByteArrayInputStream(buffer.toArray()));
