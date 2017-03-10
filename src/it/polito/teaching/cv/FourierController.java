@@ -1,6 +1,5 @@
 package it.polito.teaching.cv;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,10 +7,11 @@ import java.util.List;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
+
+import it.polito.elite.teaching.cv.utils.Utils;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -26,7 +26,7 @@ import javafx.stage.Stage;
  * antitransformation.
  * 
  * @author <a href="mailto:luigi.derussis@polito.it">Luigi De Russis</a>
- * @version 1.1 (2015-11-03)
+ * @version 2.0 (2017-03-10)
  * @since 1.0 (2013-12-11)
  * 
  */
@@ -80,7 +80,7 @@ public class FourierController
 			// read the image in gray scale
 			this.image = Imgcodecs.imread(file.getAbsolutePath(), Imgcodecs.CV_LOAD_IMAGE_GRAYSCALE);
 			// show the image
-			this.originalImage.setImage(this.mat2Image(this.image));
+			this.updateImageView(originalImage, Utils.mat2Image(this.image));
 			// set a fixed width
 			this.originalImage.setFitWidth(250);
 			// preserve image ratio
@@ -123,7 +123,7 @@ public class FourierController
 		Mat magnitude = this.createOptimizedMagnitude(this.complexImage);
 		
 		// show the result of the transformation as an image
-		this.transformedImage.setImage(this.mat2Image(magnitude));
+		this.updateImageView(transformedImage, Utils.mat2Image(magnitude));
 		// set a fixed width
 		this.transformedImage.setFitWidth(250);
 		// preserve image ratio
@@ -148,7 +148,10 @@ public class FourierController
 		Core.split(this.complexImage, this.planes);
 		Core.normalize(this.planes.get(0), restoredImage, 0, 255, Core.NORM_MINMAX);
 		
-		this.antitransformedImage.setImage(this.mat2Image(restoredImage));
+		// move back the Mat to 8 bit, in order to proper show the result
+		restoredImage.convertTo(restoredImage, CvType.CV_8U);
+		
+		this.updateImageView(antitransformedImage, Utils.mat2Image(restoredImage));
 		// set a fixed width
 		this.antitransformedImage.setFitWidth(250);
 		// preserve image ratio
@@ -254,21 +257,18 @@ public class FourierController
 		this.stage = stage;
 	}
 	
+	
 	/**
-	 * Convert a Mat object (OpenCV) in the corresponding Image for JavaFX
+	 * Update the {@link ImageView} in the JavaFX main thread
 	 * 
-	 * @param frame
-	 *            the {@link Mat} representing the current frame
-	 * @return the {@link Image} to show
+	 * @param view
+	 *            the {@link ImageView} to update
+	 * @param image
+	 *            the {@link Image} to show
 	 */
-	private Image mat2Image(Mat frame)
+	private void updateImageView(ImageView view, Image image)
 	{
-		// create a temporary buffer
-		MatOfByte buffer = new MatOfByte();
-		// encode the frame in the buffer, according to the PNG format
-		Imgcodecs.imencode(".png", frame, buffer);
-		// build and return an Image created from the image encoded in the
-		// buffer
-		return new Image(new ByteArrayInputStream(buffer.toArray()));
+		Utils.onFXThread(view.imageProperty(), image);
 	}
+	
 }
