@@ -1,5 +1,7 @@
 ## Discrete Fourier Transform with OpenCV and JavaFX
 
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 *Computer Vision course - [Politecnico di Torino](http://www.polito.it)*
 
 A project, made in Eclipse (Neon), for experimenting with the Discrete Fourier transform (and its inverse), starting from two grayscale images: a circle and the *sin* function. Example images are provided in the `images` folder.
